@@ -1,0 +1,8 @@
+__pycache__/
+*.pyc
+.csp-data/
+.test-data/
+.test-work/
+dist/
+build/
+*.spec

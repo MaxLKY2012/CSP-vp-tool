@@ -11,6 +11,7 @@ from pathlib import Path
 import re
 import secrets
 import stat
+import sys
 import threading
 import time
 from datetime import datetime, timezone, timedelta
@@ -385,6 +386,40 @@ def make_handler(exam, token):
     return Handler
 
 
+def confirm_exit():
+    """Ask before stopping any service; Enter/No/another Ctrl+C cancels exit."""
+    while True:
+        try:
+            answer = input("\nExit simulator? Automatic collection will stop. [y/N]: ").strip().lower()
+        except (KeyboardInterrupt, EOFError):
+            answer = "no"
+        if answer in ("y", "yes"):
+            return True
+        if answer in ("", "n", "no"):
+            print("Exit cancelled. The simulator and automatic collection are still running.", flush=True)
+            return False
+        print("Please enter Yes or No (press Enter to continue running).", flush=True)
+
+
+def serve_until_exit(server, stop, interactive=None):
+    if interactive is None:
+        interactive = sys.stdin.isatty()
+    # Keep HTTP requests and the collector alive while the console waits for input.
+    http_thread = threading.Thread(target=server.serve_forever, kwargs={"poll_interval": 0.2}, daemon=True)
+    http_thread.start()
+    try:
+        while not stop.is_set():
+            try:
+                stop.wait(0.2)
+            except KeyboardInterrupt:
+                if not interactive or confirm_exit():
+                    break
+    finally:
+        stop.set()
+        server.shutdown()
+        http_thread.join()
+
+
 def main():
     parser = argparse.ArgumentParser(description="福建 CSP 考场回收模拟器")
     parser.add_argument("--port", type=int, default=0)
@@ -422,13 +457,11 @@ def main():
     thread = threading.Thread(target=ticker, daemon=True)
     thread.start()
     url = f"http://127.0.0.1:{server.server_port}"
-    print(f"Fujian CSP simulator: {url}\nKeep this process running until collection finishes.", flush=True)
+    print(f"Fujian CSP simulator: {url}\nKeep this process running until collection finishes.\nPress Ctrl+C to request exit; choose No to keep running.", flush=True)
     if not args.no_browser:
         webbrowser.open(url)
     try:
-        server.serve_forever(poll_interval=0.2)
-    except KeyboardInterrupt:
-        pass
+        serve_until_exit(server, stop)
     finally:
         stop.set()
         thread.join()

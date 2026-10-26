@@ -235,6 +235,61 @@ class CollectionTests(unittest.TestCase):
         with self.assertRaises(ValueError):
             app.list_folders(str(self.work / "missing"))
 
+    def test_no_keeps_http_and_collection_alive_until_yes(self):
+        self.write()
+        self.start()
+        server = ThreadingHTTPServer(("127.0.0.1", 0), app.make_handler(self.exam, "test-token"))
+        self.addCleanup(server.server_close)
+        url = f"http://127.0.0.1:{server.server_port}/api/state"
+        stop = threading.Event()
+        prompts = []
+
+        def answer(prompt):
+            prompts.append(prompt)
+            self.assertFalse(stop.is_set())
+            with urlopen(url, timeout=3) as response:
+                current = json.load(response)
+            if len(prompts) == 1:
+                self.assertEqual(current["phase"], "running")
+                # Simulate the deadline arriving while the user is still deciding.
+                collector = threading.Thread(target=lambda: self.exam.collect_due(self.deadline + 0.1))
+                collector.start()
+                collector.join(timeout=3)
+                self.assertFalse(collector.is_alive())
+                with urlopen(url, timeout=3) as response:
+                    self.assertEqual(json.load(response)["phase"], "collected")
+                return "No"
+            # The second Ctrl+C must still find a live HTTP service and sealed result.
+            self.assertEqual(current["phase"], "collected")
+            return "Yes"
+
+        with patch.object(stop, "wait", side_effect=[KeyboardInterrupt, KeyboardInterrupt]) as interrupts:
+            with patch("builtins.input", side_effect=answer), patch("builtins.print"):
+                app.serve_until_exit(server, stop, interactive=True)
+        self.assertEqual(interrupts.call_count, 2)
+        self.assertEqual(len(prompts), 2)
+        self.assertTrue(stop.is_set())
+        self.assertTrue(Path(self.exam.state["report"]).is_file())
+
+    def test_exit_confirmation_defaults_to_no(self):
+        for answer in ("", "n", "N", "No", " no ", KeyboardInterrupt, EOFError):
+            with self.subTest(answer=answer), patch("builtins.input", side_effect=[answer]), patch("builtins.print"):
+                self.assertFalse(app.confirm_exit())
+        for answer in ("y", "Y", "Yes", " YES "):
+            with self.subTest(answer=answer), patch("builtins.input", return_value=answer):
+                self.assertTrue(app.confirm_exit())
+        with patch("builtins.input", side_effect=["invalid", "No"]), patch("builtins.print"):
+            self.assertFalse(app.confirm_exit())
+
+    def test_noninteractive_interrupt_stops_without_reading_input(self):
+        server = ThreadingHTTPServer(("127.0.0.1", 0), app.make_handler(self.exam, "test-token"))
+        self.addCleanup(server.server_close)
+        stop = threading.Event()
+        with patch.object(stop, "wait", side_effect=KeyboardInterrupt), patch("builtins.input") as reader:
+            app.serve_until_exit(server, stop, interactive=False)
+        reader.assert_not_called()
+        self.assertTrue(stop.is_set())
+
 
 if __name__ == "__main__":
     unittest.main()

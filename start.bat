@@ -7,5 +7,6 @@ if errorlevel 1 (
   pause
   exit /b 1
 )
-python app.py
-if errorlevel 1 pause
+rem Give Python its own console so Ctrl+C does not trigger cmd.exe's batch prompt.
+start "Fujian CSP Simulator" python "%~dp0app.py"
+exit /b
