@@ -53,16 +53,16 @@ E:\考场\                         ← 工作文件夹
 
 ## 快照与存储
 
-`app.py` 所在目录的 `.csp-data/` 保存设置与回收数据（可使用 `--data-dir` 指定其他目录）：
+`app.py` 所在目录的 `.csp-data\` 保存设置与回收数据（可使用 `--data-dir` 指定其他目录）：
 
 ```text
-.csp-data/
+.csp-data\
 ├── state.json
-└── collections/<场次时间-随机编号>/
+└── collections\<场次时间-随机编号>\
     ├── snapshot.json       # 原始字节的 Base64 快照，包含四题结果
     ├── manifest.json       # 路径、状态、字节数、SHA-256、规定及实际回收时间
     ├── report.html         # 独立离线报告，自带样式与复制功能
-    └── sources/FJ-00055/<英文名>/<英文名>.cpp
+    └── sources\FJ-00055\<英文名>\<英文名>.cpp
 ```
 
 源文件只读取，不删除、不移动。回收报告来自持久化快照，修改工作目录不会改变已回收代码。UTF-8（含 BOM）和 GB18030/GBK 用于显示，归档保留原始字节、换行和编码。空文件会如实回收并标注 0 字节；无法解码的文件保留下载入口。复制的是源代码文本，不自动删除 `freopen`，请按目标 OJ 要求自行检查。
@@ -89,4 +89,4 @@ python app.py --port 8765 --no-browser
 
 ## 打包发布
 
-运行 `python tools/build_release.py`，在 `dist/` 生成带日期的 ZIP 及 SHA-256 校验文件。按明确的文件清单打包，不包含本地设置、考生答卷、回收报告、测试数据、缓存和截图。
+运行 `python tools/build_release.py`，在 `dist\` 生成带日期的 ZIP 及 SHA-256 校验文件。按明确的文件清单打包，不包含本地设置、考生答卷、回收报告、测试数据、缓存和截图。

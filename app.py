@@ -132,6 +132,7 @@ def report_html(snapshot):
     for i, p in enumerate(snapshot["problems"], 1):
         ok = p["status"] == "collected"
         code = p.get("code")
+        display_path = p["path"].replace("/", "\\")
         buttons = ""
         if ok:
             if code is not None:
@@ -139,7 +140,7 @@ def report_html(snapshot):
             buttons += f'<a class="download" href="data:application/octet-stream;base64,{p["raw"]}" download="{esc(p["slug"])}.cpp">下载 .cpp</a>'
         cards.append(f'''<section class="report-card"><div class="report-card-head"><div><span class="eyebrow">PROBLEM {i:02}</span><h2>{esc(p['title'])} <small>{esc(p['slug'])}</small></h2></div><div class="actions">{buttons}</div></div>
 <p class="{'success' if ok else 'warning'}">{esc(p['message'])}{' · ' + str(p['bytes']) + ' 字节 · ' + esc(p['encoding']) if ok else ''}</p>
-<p class="file-path">{esc(p['path'])}</p>
+<p class="file-path">{esc(display_path)}</p>
 {'<pre tabindex="0"><code>' + esc(code) + '</code></pre>' if code is not None else '<div class="empty-code">' + ('原始文件已保存，请下载查看。' if ok else '没有可复制的代码。只接受规定路径中的源程序。') + '</div>'}
 {'<details><summary>查看 SHA-256 校验值</summary><code>' + p['sha256'] + '</code></details>' if ok else ''}</section>''')
     count = sum(p["status"] == "collected" for p in snapshot["problems"])

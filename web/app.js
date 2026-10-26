@@ -24,7 +24,8 @@ async function api(path, data) {
 function candidateData() {return {candidate:$('candidate').value.trim(),workspace:$('workspace').value.trim()};}
 function updatePath() {
   const {candidate,workspace}=candidateData();
-  $('candidate-path').textContent = `${workspace || '工作文件夹'} / ${candidate || '准考证号'} / 题目英文名 / 题目英文名.cpp`;
+  const folder = (workspace || '工作文件夹').replaceAll('/', '\\').replace(/\\+$/, '');
+  $('candidate-path').textContent = [folder, candidate || '准考证号', '题目英文名', '题目英文名.cpp'].join('\\');
 }
 function renderProblems() {
   const problems = state.settings?.problems || Array.from({length:4},(_,i)=>({title:`第 ${i+1} 题待设置`,slug:''}));
@@ -40,7 +41,7 @@ function renderProblems() {
     top.append(number,status);
     const name = document.createElement('h3'); name.textContent=problem.title;
     const slug = document.createElement('div'); slug.className='slug'; slug.textContent=problem.slug || '在 Settings 中填写题目信息';
-    const path = document.createElement('div'); path.className='path'; path.textContent=problem.slug?`${problem.slug} / ${problem.slug}.cpp`:'— / —.cpp';
+    const path = document.createElement('div'); path.className='path'; path.textContent=problem.slug?`${problem.slug}\\${problem.slug}.cpp`:'—\\—.cpp';
     card.append(top,name,slug,path);
     if(result){const detail=document.createElement('div'); detail.className='detail';detail.textContent=result.status==='collected'?`${result.bytes} 字节${result.bytes===0?' · 空文件':''}`:result.message;card.append(detail);}
     $('problems').append(card);
