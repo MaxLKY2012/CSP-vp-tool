@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="csrf-token" content="__TOKEN__">
+  <title>福建 CSP · 考场模拟</title><link rel="stylesheet" href="/style.css">
+  <script src="/app.js" defer></script>
+</head>
+<body>
+  <header class="topbar"><div class="brand"><span class="brand-icon">F<span>.</span></span>福建 CSP<span class="brand-sub">考场模拟</span></div><div class="top-actions"><span class="local-badge"><i></i>本地运行</span><button id="settings-button" class="settings-button">⚙ <span>Settings</span><b id="settings-dot"></b></button></div></header>
+  <main class="workspace">
+    <div class="page-heading"><div><div class="eyebrow">FUJIAN · CSP-J / S · ROUND 02</div><h1>专注作答，<span class="muted">其余交给时间。</span></h1><p class="lead">还原福建 CSP 第二轮的目录规范与定时源程序回收流程。</p></div><span class="pill">练习环境 · 非官方客户端</span></div>
+    <div class="steps"><div id="step-1" class="step current"><span>01</span>考前设置</div><div class="step-line"></div><div id="step-2" class="step"><span>02</span>模拟作答</div><div class="step-line"></div><div id="step-3" class="step"><span>03</span>回收与核对</div></div>
+    <div id="connection-error" class="notice warning" hidden>与本地程序的连接已断开。请重新运行 start.bat；浏览器本身不能回收文件。</div>
+    <div id="error-panel" class="notice warning" hidden></div>
+    <div class="dashboard-grid">
+      <section class="panel candidate-panel"><div class="panel-heading"><h2>考生工作区</h2><span id="phase-badge" class="tag">等待开始</span></div><p class="section-intro">确认信息后开始。本场开始后，考生信息与设置将锁定。</p>
+        <form id="candidate-form"><label for="candidate">准考证号 <span class="required">*</span></label><input id="candidate" name="candidate" placeholder="例如 FJ-00055" autocomplete="off" spellcheck="false" maxlength="27" required pattern="FJ-[A-Z0-9]+"><p class="field-hint">FJ 使用大写字母，中间使用英文半角减号「-」。</p>
+        <label for="workspace">工作文件夹 <span class="required">*</span></label><div class="folder-input"><input id="workspace" name="workspace" placeholder="选择工作文件夹，例如 E:\考场" required><button id="browse-button" type="button">选择文件夹</button></div><p class="field-hint">选择准考证号文件夹的上一级目录。</p>
+        <div class="path-preview"><span class="tiny-label">本场源程序存放位置</span><code id="candidate-path">工作文件夹 / 准考证号 / 题目英文名 / 题目英文名.cpp</code></div>
+        <div class="form-actions"><button id="start-button" class="primary" type="submit" disabled>开始模拟 <span>↗</span></button><button id="check-button" class="secondary" type="button" disabled>检查目录</button></div><p id="start-help" class="field-hint">开始前，请先完成右上角的必填 Settings。</p></form>
+        <div id="completion-actions" class="form-actions" hidden><a id="report-link" class="primary" href="/report" target="_blank" rel="noopener">打开代码回收报告 ↗</a><button id="reset-button" class="secondary" type="button">下一场模拟</button></div>
+        <button id="retry-button" class="secondary" hidden>从已保存快照重新导出</button>
+      </section>
+      <aside class="timer-panel"><div class="timer-top"><span class="eyebrow">COLLECTION TIMER</span><span id="timer-indicator" class="timer-indicator">尚未开始</span></div><h2 id="timer-heading">距离自动回收</h2><div id="countdown" class="countdown">--<span>:</span>--<span>:</span>--</div><div class="timer-deadline"><span>计划回收时间 · 北京时间</span><strong id="deadline-display">请先设置回收时间</strong></div><div class="timer-bottom"><span class="clock-symbol">◷</span><p id="timer-note">到点自动封存四题源程序，<br>并打开可复制代码的 HTML 报告。</p></div></aside>
+    </div>
+    <section class="panel problems-panel"><div class="panel-heading"><div><h2>本场题目 <span class="count-label">4 PROBLEMS</span></h2><p class="section-intro">仅回收题目子目录下同名的 .cpp 文件。其他文件不会被收取。</p></div><span id="check-time" class="field-hint">等待配置题目</span></div><div id="problems" class="problem-grid"></div></section>
+    <section class="guide-grid"><div><div class="guide-title"><span>01 /</span><h3>自己建立答题目录</h3></div><p>在工作文件夹中建立准考证号目录，再为每道题建立英文小写目录。程序不会代建或纠正命名。</p></div><div><div class="guide-title"><span>02 /</span><h3>保存代码，保持程序运行</h3></div><p>使用自己的编辑器作答。回收仅读取已保存到磁盘的文件；请勿关闭本地程序或让电脑休眠。</p></div><div><div class="guide-title"><span>03 /</span><h3>核对字节数，复制到 OJ</h3></div><p>回收后逐题核对代码与字节数。报告保留原始代码，由考生自行复制到 OJ 提交。</p></div></section>
+    <footer><span>福建 CSP 考场模拟 <span class="footer-dot">·</span> 数据仅保存在本机</span><a href="https://noi.cn/gs/xw/fj/2026-10-15/940146.shtml" target="_blank" rel="noopener">查看福建官方目录与回收规则 ↗</a></footer>
+  </main>
+  <dialog id="settings-dialog" aria-labelledby="settings-title"><form id="settings-form"><div class="dialog-header"><div><span class="eyebrow">BEFORE YOU START</span><h2 id="settings-title">考前设置 <span>Settings</span></h2></div><button id="close-settings" type="button" class="icon-button" aria-label="关闭设置">×</button></div><p class="section-intro">每场开始前必须设置回收时间及四道题目。开始后不可更改。</p><label for="deadline">回收时间 <span class="required">*</span></label><input id="deadline" type="datetime-local" step="1" required><p class="field-hint">北京时间（UTC+8），填写完整日期与时间。</p><div class="settings-table-head"><span>题号</span><span>题目名称</span><span>英文名 / 文件名</span></div><div id="problem-settings"></div><div class="notice compact">例如英文名为 <code>airplane</code>，只回收 <code>准考证号/airplane/airplane.cpp</code>。</div><p id="settings-error" class="warning" role="alert"></p><button class="primary full-width" type="submit">保存设置</button></form></dialog>
+  <dialog id="reset-dialog" aria-labelledby="reset-title"><h2 id="reset-title">开始下一场模拟？</h2><p>本场回收文件和报告会保留。请为下一场重新核对回收时间。</p><div class="form-actions"><button id="confirm-reset" class="primary">保留报告，开始下一场</button><button id="cancel-reset" class="secondary">返回</button></div></dialog>
+  <dialog id="folder-dialog" aria-labelledby="folder-title"><div class="dialog-header"><h2 id="folder-title">选择工作文件夹</h2><button id="close-folder" class="icon-button" aria-label="关闭文件夹选择">×</button></div><p class="section-intro">选择准考证号目录的上一级。仅浏览本机目录，不上传文件。</p><div id="folder-roots" class="folder-roots"></div><form id="folder-address-form"><label for="folder-address">目录路径</label><div class="folder-input"><input id="folder-address" autocomplete="off" placeholder="输入文件夹绝对路径"><button type="submit">前往</button></div></form><div class="folder-toolbar"><button id="folder-up" class="secondary">↑ 上一级</button><span id="folder-count" class="field-hint"></span></div><div id="folder-list" class="folder-list"></div><p id="folder-error" class="warning" role="alert"></p><button id="choose-folder" class="primary full-width" disabled>选择当前文件夹</button></dialog>
+  <div id="toast" role="status" aria-live="polite" hidden></div>
+</body></html>
